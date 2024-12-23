@@ -58,7 +58,33 @@ public class UserController {
 	}
 
 
+    
+    @PostMapping("/recover-password")
+    public ResponseEntity<?> recoverPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body("Correo electrónico es obligatorio");
+        }
+        // Lógica para generar y enviar el correo con el enlace de recuperación
+        boolean success = userService.sendRecoveryEmail(email);
+        if (success) {
+            return ResponseEntity.ok("Correo enviado correctamente.");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuario no encontrado.");
+        }
+    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        boolean result = userService.sendRecoveryEmail(email);
 
+        if (result) {
+            return ResponseEntity.ok("Correo de recuperación enviado.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado.");
+        }
+    }
+    
 	@GetMapping("/registrar2")
 	public void registrar2(HttpServletRequest req, @RequestParam String email, @RequestParam String pwd1, @RequestParam String pwd2) {
 		CredencialesRegistro cr = new CredencialesRegistro();

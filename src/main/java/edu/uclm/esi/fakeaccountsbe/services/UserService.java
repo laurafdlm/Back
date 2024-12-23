@@ -13,13 +13,19 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 @Service
 public class UserService {
 		
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private JavaMailSender mailSender;
     
 	private Map<String, User> users = new ConcurrentHashMap<>();
 	private Map<String, List<User>> usersByIp = new ConcurrentHashMap<>();
@@ -48,7 +54,39 @@ public class UserService {
 	public Collection<User> getAllUsers() {
 		return this.users.values();
 	}
+	
+	public boolean sendRecoveryEmail(String email) {
+	    User user = userRepository.findById(email).orElse(null);
+	    if (user == null) {
+	        return false; // Usuario no encontrado
+	    }
 
+	    String recoveryToken = java.util.UUID.randomUUID().toString();
+	    user.setToken(recoveryToken);
+	    userRepository.save(user);
+
+	    String recoveryUrl = "http://localhost:4200/reset-password?token=" + recoveryToken;
+
+	    try {
+	        sendEmail(email, recoveryUrl);
+	        return true;
+	    } catch (MessagingException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
+	}
+
+	private void sendEmail(String to, String recoveryUrl) throws MessagingException {
+	    MimeMessage message = mailSender.createMimeMessage();
+	    MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+	    helper.setTo(to);
+	    helper.setSubject("Recuperación de contraseña");
+	    helper.setText("<p>Para restablecer tu contraseña, haz clic en el enlace:</p>" +
+	                   "<a href='" + recoveryUrl + "'>Restablecer Contraseña</a>", true);
+
+	    mailSender.send(message);
+	}
     public User find(String email, String pwd) {
         User user = userRepository.findById(email).orElse(null);
         if (user == null || !user.getPwd().equals(pwd)) {
