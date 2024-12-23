@@ -6,6 +6,9 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -34,17 +37,21 @@ public class UserController {
 	private UserService userService;
 	
 	@PostMapping("/registrar1")
-	public ResponseEntity<String> registrar1(HttpServletRequest req, @RequestBody CredencialesRegistro cr) {
+	public ResponseEntity<Map<String, String>> registrar1(HttpServletRequest req, @RequestBody CredencialesRegistro cr) {
 	    cr.comprobar();
 	    User user = new User();
 	    user.setEmail(cr.getEmail());
 	    user.setPwd(cr.getPwd1());
 	    
 	    this.userService.registrar(req.getRemoteAddr(), user);
-	    return ResponseEntity.ok("Usuario registrado con éxito");
+
+	    // Crear un mapa para devolver como JSON
+	    Map<String, String> response = new HashMap<>();
+	    response.put("message", "Usuario registrado con éxito");
+
+	    return ResponseEntity.ok(response);
 	}
 
-	
 	@GetMapping("/registrar2")
 	public void registrar2(HttpServletRequest req, @RequestParam String email, @RequestParam String pwd1, @RequestParam String pwd2) {
 		CredencialesRegistro cr = new CredencialesRegistro();
