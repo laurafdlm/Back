@@ -1,0 +1,6 @@
+edu\uclm\esi\fakeaccountsbe\model\Deleter.class
+edu\uclm\esi\fakeaccountsbe\AppFakeAccountsBE.class
+edu\uclm\esi\fakeaccountsbe\model\User.class
+edu\uclm\esi\fakeaccountsbe\services\UserService.class
+edu\uclm\esi\fakeaccountsbe\model\CredencialesRegistro.class
+edu\uclm\esi\fakeaccountsbe\http\UserController.class
