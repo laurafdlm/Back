@@ -38,19 +38,23 @@ public class UserController {
 	
 	@PostMapping("/registrar1")
 	public ResponseEntity<Map<String, String>> registrar1(HttpServletRequest req, @RequestBody CredencialesRegistro cr) {
+	    System.out.println("Intentando registrar usuario con email: " + cr.getEmail());
 	    cr.comprobar();
+
 	    User user = new User();
 	    user.setEmail(cr.getEmail());
 	    user.setPwd(cr.getPwd1());
-	    
+
 	    this.userService.registrar(req.getRemoteAddr(), user);
 
-	    // Crear un mapa para devolver como JSON
+	    System.out.println("Usuario registrado exitosamente: " + user.getEmail());
+
 	    Map<String, String> response = new HashMap<>();
 	    response.put("message", "Usuario registrado con éxito");
 
 	    return ResponseEntity.ok(response);
 	}
+
 
 	@GetMapping("/registrar2")
 	public void registrar2(HttpServletRequest req, @RequestParam String email, @RequestParam String pwd1, @RequestParam String pwd2) {
@@ -73,12 +77,17 @@ public class UserController {
 	}
 	
 	@PutMapping("/login1")
-	public String login1(@RequestBody User user) {
-		user = this.userService.find(user.getEmail(), user.getPwd());
-		user.setToken(UUID.randomUUID().toString());
-		return user.getToken();
+	public ResponseEntity<Map<String, String>> login1(@RequestBody User user) {
+	    User loggedUser = this.userService.find(user.getEmail(), user.getPwd());
+	    loggedUser.setToken(UUID.randomUUID().toString());
+	    this.userService.save(loggedUser); // Guarda el token actualizado en la base de datos
+
+	    Map<String, String> response = new HashMap<>();
+	    response.put("token", loggedUser.getToken());
+	    return ResponseEntity.ok(response);
 	}
-	
+
+
 	@GetMapping("/login2")
 	public User login2(HttpServletResponse response, @RequestParam String email, @RequestParam String pwd) {
 		User user = this.userService.find(email, pwd);
