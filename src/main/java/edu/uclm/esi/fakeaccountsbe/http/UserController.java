@@ -38,22 +38,25 @@ public class UserController {
 	
 	@PostMapping("/registrar1")
 	public ResponseEntity<Map<String, String>> registrar1(HttpServletRequest req, @RequestBody CredencialesRegistro cr) {
-	    System.out.println("Intentando registrar usuario con email: " + cr.getEmail());
 	    cr.comprobar();
 
 	    User user = new User();
 	    user.setEmail(cr.getEmail());
 	    user.setPwd(cr.getPwd1());
-
 	    this.userService.registrar(req.getRemoteAddr(), user);
 
-	    System.out.println("Usuario registrado exitosamente: " + user.getEmail());
+	    // Generar token para el usuario registrado
+	    String token = UUID.randomUUID().toString();
+	    user.setToken(token);
+	    this.userService.save(user);
 
+	    // Retornar el token en la respuesta
 	    Map<String, String> response = new HashMap<>();
-	    response.put("message", "Usuario registrado con éxito");
-
+	    response.put("message", "Usuario registrado con éxito.");
+	    response.put("token", token);
 	    return ResponseEntity.ok(response);
 	}
+
 
 
 	@GetMapping("/registrar2")
