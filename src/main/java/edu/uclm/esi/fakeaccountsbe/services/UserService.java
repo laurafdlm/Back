@@ -61,13 +61,16 @@ public class UserService {
 	        return false; // Usuario no encontrado
 	    }
 
+	    // Generar token de recuperación
 	    String recoveryToken = java.util.UUID.randomUUID().toString();
 	    user.setToken(recoveryToken);
 	    userRepository.save(user);
 
+	    // URL de recuperación
 	    String recoveryUrl = "http://localhost:4200/reset-password?token=" + recoveryToken;
 
 	    try {
+	        // Enviar correo
 	        sendEmail(email, recoveryUrl);
 	        return true;
 	    } catch (MessagingException e) {
@@ -76,17 +79,23 @@ public class UserService {
 	    }
 	}
 
+
 	private void sendEmail(String to, String recoveryUrl) throws MessagingException {
 	    MimeMessage message = mailSender.createMimeMessage();
 	    MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
 	    helper.setTo(to);
 	    helper.setSubject("Recuperación de contraseña");
-	    helper.setText("<p>Para restablecer tu contraseña, haz clic en el enlace:</p>" +
-	                   "<a href='" + recoveryUrl + "'>Restablecer Contraseña</a>", true);
+	    helper.setText(
+	        "<p>Para restablecer tu contraseña, haz clic en el siguiente enlace:</p>" +
+	        "<a href='" + recoveryUrl + "'>Restablecer Contraseña</a>",
+	        true
+	    );
 
 	    mailSender.send(message);
 	}
+
+	
     public User find(String email, String pwd) {
         User user = userRepository.findById(email).orElse(null);
         if (user == null || !user.getPwd().equals(pwd)) {
